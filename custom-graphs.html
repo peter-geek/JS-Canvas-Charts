@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Half Donut Graph with Rounded Edges</title>
+    <title>Custom JS Graphs</title>
 </head>
 <body style="background-color: #141324;">
-    <div style="height: 30px; background-color: #5b5b6c; display: none;"></div>
+    <div style="height: 30px; background-color: #53be7c; display: none;"></div>
     <div style="height: 30px; background-color: #00b1e5; display: none;"></div>
     <div style="display: flex; justify-content: center; flex-direction: column; border-radius: 10px; width: 350px; height: 200px; background-color: #1d1c2e;">
         <canvas id="speedMeterGraph" style="margin: 20px; box-sizing: border-box;"></canvas>
     </div>
     <div style="display: flex; justify-content: center; flex-direction: column; margin-top: 10px; border-radius: 10px; width: 350px; height: 200px; background-color: #1d1c2e;">
         <canvas id="lineGraph" style="margin: 20px; box-sizing: border-box;"></canvas>
+    </div>
+    <div style="display: flex; justify-content: center; flex-direction: column; margin-top: 10px; border-radius: 10px; width: 350px; height: 200px; background-color: #1d1c2e;">
+        <canvas id="barGraph" style="margin: 20px; box-sizing: border-box;"></canvas>
     </div>
     <canvas id="myCanvas" width="200" height="200"></canvas>
     <script>
@@ -113,7 +116,7 @@
             // defining the dataset
             let data = [
                 [1,2,3,4,5,6,7,8,9,10,11,12,13,14], // x-axis
-                [2000,3900,2000,3000,22700,8200,40200,0,0,0,0,4900,37000,5000], // y-axis
+                [0,0,0,0,2700,0,40200,0,0,0,0,4900,37000,5000], // y-axis
             ];
             ctx.beginPath();
             ctx.strokeStyle = '#060';
@@ -140,11 +143,115 @@
                     return;
                 }
                 counter++;
-            },50);
+            },70);
             
             console.log(cordinates);
         }
         drawLineGraph();
+    </script>
+    <script>
+        function drawBarGraph () {
+            const canvas = document.getElementById('barGraph');
+            canvas.width = 300;
+            canvas.height = 150;
+            ctx = canvas.getContext('2d');
+            ctx.beginPath();
+            ctx.strokeStyle = '#00d7ff';
+            ctx.lineWidth = 1;
+            const startCordinates = {x: 30, y: canvas.height-20};
+            ctx.moveTo(startCordinates.x, startCordinates.y);
+            // ctx.strokeRect();
+
+            // dataset
+            const data = [10000,7500,80000,39000,33800,45000,7900];
+            const labels = ['M','T','W','T','F','S','S'];
+            
+            // draw the layout
+            ctx.lineTo(startCordinates.x,20);
+            ctx.moveTo(startCordinates.x-5, startCordinates.y-5);
+            ctx.lineTo(canvas.width-20, startCordinates.y-5);
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 1;
+            // constructing the bars
+            let barGap = 5;
+            
+            const barMaxHeight = canvas.height-(0.3*canvas.height);
+            let graphArea = canvas.width-startCordinates.x*2;
+            console.log(graphArea);
+            let barXCordinate = startCordinates.x+barGap;
+            let barWidth = (graphArea/data.length);
+
+            // drawing the guides
+            let topFigure = Math.max(...data);
+            let cordinates = [];
+            // data.map(i => )
+            console.log(barMaxHeight/4);
+            let yScaleCordinates = [];
+            for(let i = 1; i < 5; i++) {
+                // let a = ;
+                let yCordinate = (barMaxHeight/4)*i-5;
+                ctx.moveTo(startCordinates.x-5, yCordinate);
+                ctx.lineTo(graphArea+30,yCordinate);
+                // console.log("Line");
+                yScaleCordinates = [...yScaleCordinates,yCordinate];
+            }
+            ctx.closePath();
+            ctx.stroke();
+            
+            ctx.beginPath();
+            // ctx.strokeStyle = '#3a7';
+            let barCordinates = [];
+            for(let i = 0; i < data.length; i++) {
+                let barHeight = (data[i]/Math.max(...data))*barMaxHeight;
+                // console.log(barHeight);
+                let x = (i*barWidth)+startCordinates.x+barGap*2;
+                let y = barMaxHeight-(barHeight-20);
+                // ctx.clearRect(x,y,canvas.width,canvas.height);
+                ctx.fillStyle = '#53be7c';
+                ctx.fillRect(x,y,barWidth-barGap,barHeight);
+                barCordinates = [...barCordinates,x];
+            }
+            ctx.stroke();
+
+            // inserting the labels
+            // x-Axis
+            barCordinates.forEach((x,i) => {
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = "bold 9px sans-serif";
+                ctx.fillStyle = '#fff';
+                ctx.fillText(labels[i],x+(barWidth*.5)-3,startCordinates.y+5);
+            });
+            ctx.stroke();
+
+            // y-Axis
+            // for(let i = yScaleCordinates.length; i > 0; i--) {
+            let tmp = [];
+            for(let i = yScaleCordinates.length-1; i >= 0; i--) tmp = [...tmp,yScaleCordinates[i]];
+            yScaleCordinates = tmp;
+            for(let i = 0; i < yScaleCordinates.length; i++) {
+                let y = yScaleCordinates[i];
+                let label = ((Math.max(...data)/yScaleCordinates.length)*i).toFixed(0);
+                console.log(label);
+                if(label < 1e6 && label >= 1e3) label = `${(label / 1e3).toFixed(1)}k`;
+                if(label >= 1e6) label = `${(label / 1e6).toFixed(1)}M`;
+                
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = "9px sans-serif";
+                ctx.fillStyle = '#fff';
+                ctx.fillText(label,startCordinates.x-15, y-(yScaleCordinates[1]-yScaleCordinates[0]));
+            }
+            
+            console.log(yScaleCordinates);
+
+            ctx.stroke();
+        }
+        drawBarGraph();
     </script>
 </body>
 </html>
