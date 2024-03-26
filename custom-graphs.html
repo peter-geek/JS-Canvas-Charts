@@ -163,7 +163,7 @@
             // ctx.strokeRect();
 
             // dataset
-            const data = [10000,7500,80000,39000,33800,45000,7900];
+            const data = [15000,7500,80000,39000,33800,45000,7900];
             const labels = ['M','T','W','T','F','S','S'];
             
             // draw the layout
@@ -181,7 +181,7 @@
             
             const barMaxHeight = canvas.height-(0.3*canvas.height);
             let graphArea = canvas.width-startCordinates.x*2;
-            console.log(graphArea);
+            // console.log(graphArea);
             let barXCordinate = startCordinates.x+barGap;
             let barWidth = (graphArea/data.length);
 
@@ -189,7 +189,7 @@
             let topFigure = Math.max(...data);
             let cordinates = [];
             // data.map(i => )
-            console.log(barMaxHeight/4);
+            // console.log(barMaxHeight/4);
             let yScaleCordinates = [];
             for(let i = 1; i < 5; i++) {
                 // let a = ;
@@ -202,23 +202,38 @@
             ctx.closePath();
             ctx.stroke();
             
-            ctx.beginPath();
             // ctx.strokeStyle = '#3a7';
             let barCordinates = [];
-            for(let i = 0; i < data.length; i++) {
-                let barHeight = (data[i]/Math.max(...data))*barMaxHeight;
+            let counter = 0;
+            const myInterval = setInterval(function () {
+                ctx.beginPath();
+                let barHeight = (data[counter]/Math.max(...data))*barMaxHeight;
                 // console.log(barHeight);
-                let x = (i*barWidth)+startCordinates.x+barGap*2;
+                let x = (counter*barWidth)+startCordinates.x+barGap*2;
                 let y = barMaxHeight-(barHeight-20);
                 // ctx.clearRect(x,y,canvas.width,canvas.height);
+                let yValue = y;
+                if(counter >= 500) {
+                    console.log("done", yValue);
+                    clearInterval(myInterval);
+                    yValue = y;
+                }
+                else yValue -= counter*(y/500);
+                counter++;
                 ctx.fillStyle = '#53be7c';
-                ctx.fillRect(x,y,barWidth-barGap,barHeight);
+                // ctx.clearRect(x,yValue,barWidth-barGap,barHeight);
+                ctx.fillRect(x,yValue,barWidth-barGap,barHeight);
+
+                console.log(yValue);
                 barCordinates = [...barCordinates,x];
-            }
-            ctx.stroke();
+                ctx.closePath();
+                ctx.stroke();
+            }, 100);
+
 
             // inserting the labels
             // x-Axis
+            ctx.beginPath();
             barCordinates.forEach((x,i) => {
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -236,18 +251,18 @@
             for(let i = 0; i < yScaleCordinates.length; i++) {
                 let y = yScaleCordinates[i];
                 let label = ((Math.max(...data)/yScaleCordinates.length)*i).toFixed(0);
-                console.log(label);
+                // console.log(label);
                 if(label < 1e6 && label >= 1e3) label = `${(label / 1e3).toFixed(1)}k`;
                 if(label >= 1e6) label = `${(label / 1e6).toFixed(1)}M`;
                 
-                ctx.textAlign = 'center';
+                ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
                 ctx.font = "9px sans-serif";
                 ctx.fillStyle = '#fff';
-                ctx.fillText(label,startCordinates.x-15, y-(yScaleCordinates[1]-yScaleCordinates[0]));
+                ctx.fillText(label,startCordinates.x-5, y-(yScaleCordinates[1]-yScaleCordinates[0]));
             }
             
-            console.log(yScaleCordinates);
+            // console.log(yScaleCordinates);
 
             ctx.stroke();
         }
