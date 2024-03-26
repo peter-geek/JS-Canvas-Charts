@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Half Donut Graph with Rounded Edges</title>
+</head>
+<body style="background-color: #141324;">
+    <div style="height: 30px; background-color: #5b5b6c; display: none;"></div>
+    <div style="height: 30px; background-color: #00b1e5; display: none;"></div>
+    <div style="display: flex; justify-content: center; flex-direction: column; border-radius: 10px; width: 350px; height: 200px; background-color: #1d1c2e;">
+        <canvas id="speedMeterGraph" style="margin: 20px; box-sizing: border-box;"></canvas>
+    </div>
+    <div style="display: flex; justify-content: center; flex-direction: column; margin-top: 10px; border-radius: 10px; width: 350px; height: 200px; background-color: #1d1c2e;">
+        <canvas id="lineGraph" style="margin: 20px; box-sizing: border-box;"></canvas>
+    </div>
+    <canvas id="myCanvas" width="200" height="200"></canvas>
+    <script>
+        const canvas = document.getElementById('speedMeterGraph');
+        canvas.width = 350;
+        canvas.height = 150;
+        function drawSpeedMeterGraph(totalAmount,paid) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.beginPath();
+
+            const radius = canvas.width*.5-50;
+            let lineWidth = 15;
+            ctx.setLineDash([0, 0]);
+            const strokeStyle = '#5b5b6c';
+            const x = canvas.width*.5;
+            const y = canvas.height-10; // Just to lift it off the ground
+            // ctx.arc()
+            ctx.arc(x, y, radius,Math.PI,0,false);
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = strokeStyle;
+            ctx.stroke();
+            ctx.closePath();
+            // ctx.
+            
+            // draw the inner arc that shows progress
+            ctx.beginPath();
+            // ctx.moveTo(x,y);
+            // const totalAmount = 10500000;
+            // const paid = 5770500;
+            // ctx.lineCap = 'butt';
+            ctx.setLineDash([25, 5]);
+            let percentage = ((paid/totalAmount)*100).toFixed(2);
+            ctx.lineWidth = 3;
+            let startAngle = 2*Math.PI/2;
+            let e = ((startAngle+Math.PI)/100)-50*((startAngle+Math.PI)/100);
+            let endAngle = e-e*(percentage/100); // now convert percentage to "e"
+            // the subtraction is a reversing method to make the percentage look natural
+            // console.log(endAngle);
+            ctx.arc(x,y,radius,startAngle,endAngle,false);
+            ctx.strokeStyle = '#00b1e5';
+            // ctx.lineCap = 'round';
+
+            // writing percentage text to the graph
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = "center";
+            ctx.font = "bold 38px sans-serif";
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${percentage}%`,x,70);
+
+            // writing percentage text to the graph
+            ctx.fillStyle = '#3a7';
+            ctx.textAlign = "center";
+            ctx.font = "14px sans-serif";
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`Total = ${totalAmount.toLocaleString()}`,x,y-45);
+
+            // writing percentage text to the graph
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = "center";
+            ctx.font = "bold 16px sans-serif";
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`Paid = ${paid.toLocaleString()}`,x,y-25);
+
+            // writing percentage text to the graph
+            ctx.fillStyle = '#f00';
+            ctx.textAlign = "center";
+            ctx.font = "bold 16px sans-serif";
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`(${(totalAmount-paid).toLocaleString()})`,x,y-5);
+            
+            ctx.stroke();
+        }
+        let max = 5770500;
+        let counter = 0;
+        let nextNum = 0;
+        let hops = 100;
+        const interval = setInterval(() => {
+            if(counter >= hops) {
+                nextNum = max;
+                clearInterval(interval);
+            }
+            else nextNum += Math.ceil(max/hops);
+            drawSpeedMeterGraph(10500000,nextNum);
+            counter++;
+        },1);
+
+        function drawLineGraph() {
+            // drawing a line graph
+            const canvas = document.getElementById('lineGraph');
+            canvas.width = 250;
+            canvas.height = 120;
+            const ctx = canvas.getContext('2d');
+            let x = 0;
+            let y = canvas.height;
+
+            // defining the dataset
+            let data = [
+                [1,2,3,4,5,6,7,8,9,10,11,12,13,14], // x-axis
+                [2000,3900,2000,3000,22700,8200,40200,0,0,0,0,4900,37000,5000], // y-axis
+            ];
+            ctx.beginPath();
+            ctx.strokeStyle = '#060';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 2;
+            let graphHeight = canvas.height-40;
+            let graphWidth = canvas.width-40;
+            let cordinates = [[],[]];
+            for(let i = 0; i < data[0].length; i++) {
+                let xCordinate = ((data[0][i]/Math.max(...data[0]))*canvas.width)-10;
+                let yCordinate = (graphHeight - (data[1][i]/Math.max(...data[1]))*graphHeight)+30;
+                cordinates[0] = [...cordinates[0],xCordinate];
+                cordinates[1] = [...cordinates[1],yCordinate];
+            }
+            
+            let counter = 0;
+            ctx.moveTo(cordinates[0][0],cordinates[1][0]);
+            const myInterval = setInterval(function () {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                ctx.lineTo(cordinates[0][counter],cordinates[1][counter]);
+                ctx.stroke();
+                if(counter >= cordinates[0].length) {
+                    clearInterval(myInterval);
+                    return;
+                }
+                counter++;
+            },50);
+            
+            console.log(cordinates);
+        }
+        drawLineGraph();
+    </script>
+</body>
+</html>
